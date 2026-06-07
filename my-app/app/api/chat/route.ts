@@ -35,14 +35,14 @@ function getReply(data: GeminiResponse) {
 
 export async function POST(req: Request) {
   try {
+    const apiKey = String(process.env.GEMINI_API_KEY || "").trim();
     const body = await req.json();
-    const apiKey = String(body.apiKey || "").trim();
     const messages = (body.messages || []) as ChatMessage[];
     const language = body.language === "kn" ? "Kannada" : "English";
 
     if (!apiKey || !messages.length) {
       return NextResponse.json(
-        { error: "Missing API key or chat messages." },
+        { error: "Missing Gemini API key in environment or chat messages." },
         { status: 400 },
       );
     }
@@ -86,7 +86,8 @@ export async function POST(req: Request) {
       reply: getReply(data) || "I could not generate a response right now.",
     });
   } catch (error) {
-    const message = error instanceof Error ? error.message : "Unexpected chat error.";
+    const message =
+      error instanceof Error ? error.message : "Unexpected chat error.";
     return NextResponse.json({ error: message }, { status: 500 });
   }
 }

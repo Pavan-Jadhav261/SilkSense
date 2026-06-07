@@ -10,13 +10,22 @@ const schemaFunction = {
   parameters: {
     type: Type.OBJECT,
     properties: {
-      detected: { type: Type.STRING, description: "What is visible in the image." },
+      detected: {
+        type: Type.STRING,
+        description: "What is visible in the image.",
+      },
       healthStatus: {
         type: Type.STRING,
         description: "One of Healthy, Warning, or Critical.",
       },
-      analysis: { type: Type.STRING, description: "Detailed findings from the image." },
-      recommendations: { type: Type.STRING, description: "Actionable advice for the farmer." },
+      analysis: {
+        type: Type.STRING,
+        description: "Detailed findings from the image.",
+      },
+      recommendations: {
+        type: Type.STRING,
+        description: "Actionable advice for the farmer.",
+      },
       confidence: { type: Type.STRING, description: "Confidence percentage." },
     },
     required: [
@@ -31,14 +40,14 @@ const schemaFunction = {
 
 export async function POST(req: Request) {
   try {
+    const apiKey = String(process.env.GEMINI_API_KEY || "");
     const body = await req.json();
-    const apiKey = String(body.apiKey || "");
     const imageBase64 = String(body.imageBase64 || "");
     const mimeType = String(body.mimeType || "image/jpeg");
 
     if (!apiKey || !imageBase64) {
       return NextResponse.json(
-        { error: "Missing API key or image data." },
+        { error: "Missing Gemini API key in environment or image data." },
         { status: 400 },
       );
     }
@@ -77,7 +86,9 @@ Call the analyze_sericulture_image function with the final structured answer.`,
         detected: String(call.args.detected || "Not detected"),
         healthStatus: String(call.args.healthStatus || "Needs Attention"),
         analysis: String(call.args.analysis || "No detailed analysis."),
-        recommendations: String(call.args.recommendations || "No recommendation provided."),
+        recommendations: String(
+          call.args.recommendations || "No recommendation provided.",
+        ),
         confidence: String(call.args.confidence || "Not specified"),
         raw,
       });

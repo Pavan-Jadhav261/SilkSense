@@ -239,7 +239,6 @@ export default function Home() {
   const [confirmPassword, setConfirmPassword] = useState("");
   const [authError, setAuthError] = useState("");
   const [isLoggedIn, setIsLoggedIn] = useState(false);
-  const [apiKey, setApiKey] = useState("");
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [scannerLoading, setScannerLoading] = useState(false);
@@ -256,7 +255,6 @@ export default function Home() {
   const t = useMemo(() => copy[lang], [lang]);
 
   useEffect(() => {
-    setApiKey(sessionStorage.getItem("seri-key") || "");
     setIsLoggedIn(sessionStorage.getItem("seri-auth") === "true");
     const saved = sessionStorage.getItem("seri-chat");
     if (saved) {
@@ -268,7 +266,6 @@ export default function Home() {
     }
   }, []);
 
-  useEffect(() => sessionStorage.setItem("seri-key", apiKey), [apiKey]);
   useEffect(() => sessionStorage.setItem("seri-chat", JSON.stringify(chatHistory)), [chatHistory]);
   useEffect(() => document.documentElement.setAttribute("lang", lang === "kn" ? "kn" : "en"), [lang]);
 
@@ -374,7 +371,6 @@ export default function Home() {
   };
 
   const onAnalyze = async () => {
-    if (!apiKey.trim()) return setScannerError(t.missingKey);
     if (!imageFile) return setScannerError(t.imageRequired);
 
     setScannerLoading(true);
@@ -386,7 +382,7 @@ export default function Home() {
       const res = await fetch("/api/scanner", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ apiKey, imageBase64, mimeType: imageFile.type }),
+        body: JSON.stringify({ imageBase64, mimeType: imageFile.type }),
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || "Image analysis failed.");
@@ -401,10 +397,6 @@ export default function Home() {
   const onChat = async (event: FormEvent) => {
     event.preventDefault();
     if (!chatInput.trim() || chatLoading) return;
-    if (!apiKey.trim()) {
-      setChatHistory((prev) => [...prev, { role: "model", text: t.missingKey }]);
-      return;
-    }
 
     const userMessage = { role: "user" as const, text: chatInput.trim() };
     const updated = [...chatHistory, userMessage];
@@ -416,7 +408,7 @@ export default function Home() {
       const res = await fetch("/api/chat", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ apiKey, messages: updated, language: lang }),
+        body: JSON.stringify({ messages: updated, language: lang }),
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || "Chat failed.");
@@ -601,10 +593,6 @@ export default function Home() {
         <section id="scanner" className="fade-item section-panel">
           <h2 className="section-title">{t.scanner}</h2>
           <p className="mt-2 text-sm text-slate-600">{t.scannerIntro}</p>
-          <label className="mt-5 block text-sm font-medium text-slate-700">
-            {t.apiLabel}
-            <input value={apiKey} onChange={(event) => setApiKey(event.target.value)} type="password" placeholder={t.apiPlaceholder} className="mt-2 w-full rounded-xl border border-emerald-200 px-4 py-3 outline-none focus:border-emerald-500" />
-          </label>
           <div onDragOver={(event) => event.preventDefault()} onDrop={(event) => { event.preventDefault(); processImage(event.dataTransfer.files?.[0]); }} className="mt-4 rounded-xl border-2 border-dashed border-emerald-300 bg-emerald-50 p-5 text-center">
             <p className="text-sm text-slate-600">{t.dropText}</p>
             <label className="mt-3 inline-block cursor-pointer rounded-full bg-[#2d6a4f] px-4 py-2 text-sm font-semibold text-white">
