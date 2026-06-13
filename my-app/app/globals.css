@@ -3,6 +3,19 @@
 :root {
   --background: #f7fff9;
   --foreground: #1c3328;
+  --page-bg: #f7fff9;
+  --page-fg: #1c3328;
+  --surface: #ffffff;
+  --border: #d7f0df;
+}
+
+:root[data-theme="dark"] {
+  --background: #08130f;
+  --foreground: #e5f5eb;
+  --page-bg: #08130f;
+  --page-fg: #e5f5eb;
+  --surface: #10221a;
+  --border: #234033;
 }
 
 @theme inline {
@@ -24,4 +37,33 @@ body {
   background: radial-gradient(circle at 20% 20%, #f0f9f3, #ffffff 60%);
   color: var(--foreground);
   font-family: var(--font-poppins), sans-serif;
+}
+
+[data-theme="dark"] body {
+  background: radial-gradient(circle at 20% 20%, #10231a, #08130f 65%);
+}
+
+.chip {
+  border-radius: 9999px;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  color: var(--page-fg);
+  padding: 0.5rem 0.875rem;
+  font-size: 0.875rem;
+  font-weight: 600;
+}
+
+.section-panel {
+  border-radius: 1.5rem;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  padding: 1.5rem;
+  box-shadow: 0 4px 16px rgba(15, 23, 42, 0.08);
+}
+
+.section-title {
+  font-size: 1.5rem;
+  line-height: 2rem;
+  font-weight: 700;
+  color: #2d6a4f;
 }

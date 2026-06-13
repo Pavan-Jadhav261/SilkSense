@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Poppins } from "next/font/google";
 import "./globals.css";
+import { AppProviders } from "./providers";
 
 const poppins = Poppins({
   variable: "--font-poppins",
@@ -11,7 +12,7 @@ const poppins = Poppins({
 export const metadata: Metadata = {
   title: "Smart Sericulture System",
   description:
-    "AI-powered informative platform for silkworm farmers, students, and beginners.",
+    "AI-powered sericulture platform with learning, maps, and chatbot tools.",
 };
 
 export default function RootLayout({
@@ -21,7 +22,9 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" className={`${poppins.variable} h-full antialiased`}>
-      <body className="min-h-full flex flex-col">{children}</body>
+      <body className="min-h-full flex flex-col">
+        <AppProviders>{children}</AppProviders>
+      </body>
     </html>
   );
 }
