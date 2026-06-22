@@ -6,7 +6,7 @@ import { appendActivity, saveAuth, useApp } from "../../providers";
 
 export default function AdminLoginPage() {
   const router = useRouter();
-  const { lang, setLang, theme, toggleTheme } = useApp();
+  const { lang, setLang, theme, toggleTheme, setAuth } = useApp();
   const [identifier, setIdentifier] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
@@ -40,6 +40,7 @@ export default function AdminLoginPage() {
       setError(t.error);
       return;
     }
+    setAuth({ isAuthed: true, role: "admin" });
     saveAuth("admin");
     appendActivity({
       role: "admin",

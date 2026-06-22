@@ -5,10 +5,11 @@ export function middleware(request: NextRequest) {
   const isAuthed = request.cookies.get("seri-auth")?.value === "1";
   const role = request.cookies.get("seri-role")?.value;
   const isLogin = request.nextUrl.pathname === "/login";
+  const isRegister = request.nextUrl.pathname === "/register";
   const isAdminLogin = request.nextUrl.pathname === "/admin-login";
-  const isAdminPage = request.nextUrl.pathname.startsWith("/admin");
+  const isAdminPage = request.nextUrl.pathname === "/admin" || request.nextUrl.pathname.startsWith("/admin/");
 
-  if (!isAuthed && !isLogin && !isAdminLogin) {
+  if (!isAuthed && !isLogin && !isRegister && !isAdminLogin) {
     const url = new URL("/login", request.url);
     return NextResponse.redirect(url);
   }
@@ -18,7 +19,7 @@ export function middleware(request: NextRequest) {
     return NextResponse.redirect(url);
   }
 
-  if (isAuthed && (isLogin || isAdminLogin)) {
+  if (isAuthed && (isLogin || isRegister)) {
     const url = new URL(role === "admin" ? "/admin" : "/dashboard", request.url);
     return NextResponse.redirect(url);
   }
@@ -27,5 +28,5 @@ export function middleware(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ["/login", "/admin-login", "/dashboard", "/dashboard/:path*", "/learning-center", "/learning-center/:path*", "/market-maps", "/market-maps/:path*", "/chatbot", "/chatbot/:path*", "/admin", "/admin/:path*"],
+  matcher: ["/login", "/register", "/admin-login", "/dashboard", "/dashboard/:path*", "/learning-center", "/learning-center/:path*", "/market-maps", "/market-maps/:path*", "/chatbot", "/chatbot/:path*", "/admin", "/admin/:path*"],
 };

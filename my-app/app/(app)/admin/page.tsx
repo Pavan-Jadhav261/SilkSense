@@ -1,11 +1,9 @@
 "use client";
 
-import { useEffect, useMemo } from "react";
-import { useRouter } from "next/navigation";
+import { useMemo } from "react";
 import { useApp, readActivityLog } from "../../providers";
 
 export default function AdminPage() {
-  const router = useRouter();
   const { lang, role } = useApp();
   const activities = useMemo(() => readActivityLog(), []);
   const t = lang === "kn"
@@ -25,12 +23,6 @@ export default function AdminPage() {
         noAccess: "You are not an admin.",
         empty: "No activity has been recorded yet.",
     };
-
-  useEffect(() => {
-    if (role !== "admin") {
-      router.replace("/admin-login");
-    }
-  }, [role, router]);
 
   if (role !== "admin") {
     return (

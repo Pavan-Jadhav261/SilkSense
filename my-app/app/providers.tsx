@@ -28,6 +28,7 @@ type AppContextValue = {
   toggleTheme: () => void;
   isAuthed: boolean;
   role: Role;
+  setAuth: (value: AuthState) => void;
   logout: () => void;
   apiBase: string;
   logActivity: (action: string, meta?: string) => void;
@@ -116,10 +117,14 @@ export function AppProviders({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     const isLoginPage = pathname === "/login";
+    const isRegisterPage = pathname === "/register";
     const isPublicLanding = pathname === "/";
-    if (!auth.isAuthed && !isLoginPage && !isPublicLanding) router.replace("/login");
-    if (auth.isAuthed && isLoginPage) router.replace("/dashboard");
-  }, [auth.isAuthed, pathname, router]);
+    const isAdminLoginPage = pathname === "/admin-login";
+    if (!auth.isAuthed && !isLoginPage && !isRegisterPage && !isAdminLoginPage && !isPublicLanding) router.replace("/login");
+    if (auth.isAuthed && (isLoginPage || isRegisterPage)) {
+      router.replace(auth.role === "admin" ? "/admin" : "/dashboard");
+    }
+  }, [auth.isAuthed, auth.role, pathname, router]);
 
   const value = useMemo<AppContextValue>(
     () => ({
@@ -129,6 +134,7 @@ export function AppProviders({ children }: { children: React.ReactNode }) {
       toggleTheme: () => setTheme((prev) => (prev === "light" ? "dark" : "light")),
       isAuthed: auth.isAuthed,
       role: auth.role,
+      setAuth,
       logout: () => {
         localStorage.removeItem("seri-auth");
         document.cookie = "seri-auth=; path=/; max-age=0";

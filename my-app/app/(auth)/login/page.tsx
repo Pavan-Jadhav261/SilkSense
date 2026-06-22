@@ -7,55 +7,62 @@ import { appendActivity, saveAuth, useApp } from "../../providers";
 
 export default function LoginPage() {
   const router = useRouter();
-  const { lang, setLang, theme, toggleTheme } = useApp();
+  const { lang, setLang, theme, toggleTheme, setAuth } = useApp();
   const [identifier, setIdentifier] = useState("");
   const [password, setPassword] = useState("");
   const [remember, setRemember] = useState(true);
   const [error, setError] = useState("");
 
-  const userId = process.env.NEXT_PUBLIC_USER_ID || "user@example.com";
-  const userPassword = process.env.NEXT_PUBLIC_USER_PASSWORD || "1234";
-
   const t = lang === "kn"
     ? {
         title: "ಲಾಗಿನ್",
-        subtitle: "ರೈತ, ಖರೀದಿದಾರ ಅಥವಾ ತಜ್ಞರಾಗಿ ಪ್ರವೇಶಿಸಿ.",
+        subtitle: "ನಿಮ್ಮ ಖಾತೆಯಿಂದ ಪ್ರವೇಶಿಸಿ.",
         identifier: "ಇಮೇಲ್ ಅಥವಾ ಮೊಬೈಲ್",
         password: "ಪಾಸ್ವರ್ಡ್",
         remember: "ನನ್ನನ್ನು ನೆನಪಿಡಿ",
         forgot: "ಪಾಸ್ವರ್ಡ್ ಮರೆತಿರಾ?",
         submit: "ಪ್ರವೇಶಿಸಿ",
-        hint: "ಈ ಖಾತೆಯ ಲಾಗಿನ್ ವಿವರಗಳು ನಿಮ್ಮ .env ಫೈಲ್‌ನಿಂದ ಬರುತ್ತವೆ.",
+        hint: "ಹೊಸ ಬಳಕೆದಾರರಿಗಾಗಿ ಮೊದಲು ನೋಂದಣಿ ಮಾಡಿ.",
         error: "ಸರಿಯಾದ ಲಾಗಿನ್ ವಿವರಗಳನ್ನು ನಮೂದಿಸಿ.",
       }
     : {
         title: "Login",
-        subtitle: "Sign in as Farmer, Buyer, or Expert.",
+        subtitle: "Sign in with your account.",
         identifier: "Email or Mobile",
         password: "Password",
         remember: "Remember Me",
         forgot: "Forgot Password?",
         submit: "Sign In",
-        hint: "This account uses the values from your .env file.",
+        hint: "Create a new account first if you do not have one.",
         error: "Enter the correct login credentials.",
       };
 
-  const onSubmit = (event: FormEvent) => {
+  const onSubmit = async (event: FormEvent) => {
     event.preventDefault();
-    const validIdentity = [userId, "9999999999"].includes(identifier.trim());
-    if (!validIdentity || password !== userPassword) {
-      setError(t.error);
-      return;
+    setError("");
+
+    try {
+      const response = await fetch("/api/auth/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ identifier, password }),
+      });
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.error || "Login failed.");
+
+      setAuth({ isAuthed: true, role: data.role });
+      saveAuth(data.role);
+      appendActivity({
+        role: data.role,
+        path: "/login",
+        action: "login_success",
+        meta: identifier.trim(),
+      });
+      if (remember) localStorage.setItem("seri-remember", "true");
+      router.replace(data.role === "admin" ? "/admin" : "/dashboard");
+    } catch (err) {
+      setError(err instanceof Error ? err.message : t.error);
     }
-    saveAuth("farmer");
-    appendActivity({
-      role: "farmer",
-      path: "/login",
-      action: "login_success",
-      meta: identifier.trim(),
-    });
-    if (remember) localStorage.setItem("seri-remember", "true");
-    router.replace("/dashboard");
   };
 
   return (
@@ -87,7 +94,10 @@ export default function LoginPage() {
           <button className="w-full rounded-xl bg-[#2d6a4f] px-4 py-3 font-semibold text-white" type="submit">{t.submit}</button>
         </form>
         <p className="mt-4 text-xs text-slate-500">{t.hint}</p>
-        <div className="mt-4 flex justify-end">
+        <div className="mt-4 flex justify-between gap-3">
+          <Link href="/register" className="text-sm font-semibold text-[#2d6a4f] underline">
+            {lang === "kn" ? "ಹೊಸ ಬಳಕೆದಾರ? ನೋಂದಣಿ ಮಾಡಿ" : "New user? Register"}
+          </Link>
           <Link href="/admin-login" className="text-sm font-semibold text-[#2d6a4f] underline">
             {lang === "kn" ? "ಅಡ್ಮಿನ್ ಆಗಿ ಲಾಗಿನ್ ಮಾಡಿ" : "Login as admin"}
           </Link>

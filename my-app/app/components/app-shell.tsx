@@ -80,9 +80,13 @@ export function AppShell({ children }: { children: React.ReactNode }) {
             ))}
           </nav>
           <div className="flex items-center gap-2">
-            <Link href="/admin-login" className="chip">
-              {t.adminLogin}
-            </Link>
+            {role === "admin" ? (
+              <span className="chip bg-[#d8f3dc] text-[#1b4332]">Admin</span>
+            ) : (
+              <Link href="/admin-login" className="chip">
+                {t.adminLogin}
+              </Link>
+            )}
             <button className="chip" onClick={() => setLang(lang === "en" ? "kn" : "en")}>
               {t.language}
             </button>
@@ -95,6 +99,23 @@ export function AppShell({ children }: { children: React.ReactNode }) {
           </div>
         </div>
       </header>
+      <div className="border-b border-[var(--border)] bg-[var(--surface)] px-4 py-2 md:hidden">
+        <div className="flex flex-wrap gap-2">
+          {navItems
+            .filter((item) => item.href !== "/admin" || role === "admin")
+            .map((item) => (
+              <Link
+                key={item.href}
+                href={item.href}
+                className={`rounded-full px-3 py-2 text-xs font-medium ${
+                  pathname === item.href ? "bg-[#2d6a4f] text-white" : "bg-emerald-50 text-[#214d39]"
+                }`}
+              >
+                {t[item.labelKey]}
+              </Link>
+            ))}
+        </div>
+      </div>
       <main className="mx-auto w-full max-w-7xl px-4 py-6 md:px-6">{children}</main>
     </div>
   );
